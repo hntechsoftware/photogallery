@@ -113,9 +113,9 @@
 </head>
 <body>
 
-    <header>
+    <header style="text-align:center;">
         <h1>The HNTech Gallery</h1>
-        <p class="subheading">Collection of my favorite photography shots, taken all over the world :)</p>
+        <p class="subheading">Collection of my favorite photography shots.<br>Shots from Pakistan, Azerbaijan, Germany, Italy, Dubai, Jordan and more :)</p>
     </header>
 
     <section-label>INDEX</section-label>
@@ -129,7 +129,7 @@
             <div id="counter">[ 00 / 00 ]</div>
             <div id="caption">FILE_NAME</div>
             <div class="download-wrapper">
-                <a id="download-link" href="#" download class="btn-download">SAVE_RAW</a>
+                <a id="download-link" href="#" download class="btn-download">DOWNLOAD</a>
             </div>
         </div>
     </div>
@@ -187,7 +187,7 @@
         
         // Update Metadata
         caption.innerText = imgObj.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-        counter.innerText = `[ ${(index + 1).toString().padStart(2, '0')} / ${images.length.toString().padStart(2, '0')} ]`;
+        counter.innerText = `[${(index + 1).toString().padStart(2, '0')} / ${images.length.toString().padStart(2, '0')}]`;
         
         dlLink.href = imgObj.download_url;
         element.classList.add('active');
