@@ -11,7 +11,7 @@
             background: #ffffff;
             color: #000;
             margin: 40px auto;
-            max-width: 900px;
+            max-width: 1100px; /* Widened for sidebar layout */
             padding: 0 20px;
             line-height: 1.2;
         }
@@ -20,6 +20,7 @@
             border-bottom: 3px solid #000;
             margin-bottom: 30px;
             padding-bottom: 10px;
+            text-align: center;
         }
 
         h1 { margin: 0; font-size: 2rem; text-transform: uppercase; }
@@ -35,26 +36,47 @@
             margin-bottom: 10px;
         }
 
-        /* Thumbnail Grid */
+        /* Layout Container */
+        .main-content {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+        }
+
+        /* Sidebar / Thumbnail Grid */
+        #sidebar {
+            width: 220px;
+            flex-shrink: 0;
+        }
+
+        #search-input {
+            width: 100%;
+            box-sizing: border-box;
+            border: 1px solid #000;
+            padding: 5px;
+            font-family: inherit;
+            margin-bottom: 10px;
+            outline: none;
+        }
+
         #grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-template-columns: 1fr 1fr;
             gap: 5px;
             border: 1px solid #000;
             padding: 10px;
-            margin-bottom: 40px;
-            max-height: 180px;
+            height: 65vh;
             overflow-y: scroll;
         }
 
         /* Brutalist Scrollbar */
-        #grid::-webkit-scrollbar { width: 10px; }
+        #grid::-webkit-scrollbar { width: 8px; }
         #grid::-webkit-scrollbar-track { background: #eee; }
-        #grid::-webkit-scrollbar-thumb { background: #000; border: 2px solid #eee; }
+        #grid::-webkit-scrollbar-thumb { background: #000; }
 
         .thumb {
-            width: 80px;
-            height: 80px;
+            width: 100%;
+            aspect-ratio: 1/1;
             object-fit: cover;
             cursor: pointer;
             filter: grayscale(100%);
@@ -64,10 +86,13 @@
         .thumb:hover, .thumb.active {
             filter: grayscale(0%);
             border: 1px solid #000;
-            outline: 1px solid #000;
         }
 
         /* Large Display Area */
+        #viewer-container {
+            flex-grow: 1;
+        }
+
         #viewer {
             border: 1px solid #000;
             padding: 20px;
@@ -75,6 +100,7 @@
             flex-direction: column;
             align-items: center;
             background: #fafafa;
+            position: relative;
         }
 
         #main-img {
@@ -84,11 +110,30 @@
             display: none;
         }
 
+        /* Navigation Buttons */
+        .nav-btns {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .btn-nav {
+            background: #fff;
+            border: 1px solid #000;
+            padding: 5px 15px;
+            font-family: inherit;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .btn-nav:hover { background: #000; color: #fff; }
+
         #meta-container {
             width: 100%;
             margin-top: 15px;
             display: grid;
-            grid-template-columns: 100px 1fr 150px; /* Counter | Caption | Download */
+            grid-template-columns: 100px 1fr 150px;
             align-items: center;
             border-top: 1px dashed #000;
             padding-top: 10px;
@@ -113,29 +158,40 @@
 </head>
 <body>
 
-    <header style="text-align:center;">
+    <header>
         <h1>The HNTech Gallery</h1>
         <p class="subheading">Collection of my favorite photography shots.<br>Shots from Pakistan, Azerbaijan, Germany, Italy, Dubai, Jordan and more :)</p>
     </header>
 
-    <section-label>INDEX</section-label>
-    <div id="grid"><span class="status">connecting_to_server...</span></div>
+    <div class="main-content">
+        <div id="sidebar">
+            <section-label>INDEX</section-label>
+            <input type="text" id="search-input" placeholder="SEARCH_FILES...">
+            <div id="grid"><span class="status">connecting...</span></div>
+        </div>
 
-    <section-label>PREVIEW_WINDOW</section-label>
-    <div id="viewer">
-        <img id="main-img" src="" alt="">
-        
-        <div id="meta-container" style="display: none;">
-            <div id="counter">[ 00 / 00 ]</div>
-            <div id="caption">FILE_NAME</div>
-            <div class="download-wrapper">
-                <a id="download-link" href="#" download class="btn-download">DOWNLOAD</a>
+        <div id="viewer-container">
+            <section-label>PREVIEW_WINDOW</section-label>
+            <div id="viewer">
+                <img id="main-img" src="" alt="">
+                
+                <div class="nav-btns">
+                    <button class="btn-nav" onclick="navigate(-1)">BACK</button>
+                    <button class="btn-nav" onclick="navigate(1)">FORWARD</button>
+                </div>
+
+                <div id="meta-container" style="display: none;">
+                    <div id="counter">[ 00 / 00 ]</div>
+                    <div id="caption">FILE_NAME</div>
+                    <div class="download-wrapper">
+                        <a id="download-link" href="#" download class="btn-download">DOWNLOAD</a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
 <script>
-    // --- CONFIGURATION ---
     const USER = 'hntechsoftware';
     const REPO = 'photogallery';
     const DIR  = 'WallpaperCollection'; 
@@ -146,8 +202,10 @@
     const meta = document.getElementById('meta-container');
     const dlLink = document.getElementById('download-link');
     const counter = document.getElementById('counter');
+    const search = document.getElementById('search-input');
 
     let images = [];
+    let currentIndex = 0;
 
     async function init() {
         try {
@@ -156,42 +214,67 @@
             images = files.filter(f => /\.(jpe?g|png|gif|webp)$/i.test(f.name));
 
             if (images.length === 0) {
-                grid.innerHTML = "STATUS: NO_FILES_FOUND";
+                grid.innerHTML = "STATUS: EMPTY";
                 return;
             }
 
             grid.innerHTML = ''; 
 
             images.forEach((img, index) => {
+                const cleanName = img.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
                 const el = document.createElement('img');
                 el.src = img.download_url;
                 el.className = 'thumb';
-                el.onclick = () => select(index, el);
+                el.title = cleanName; // Hover to show filename
+                el.dataset.index = index;
+                el.dataset.name = cleanName.toLowerCase();
+                el.onclick = () => select(index);
                 grid.appendChild(el);
 
-                if (index === 0) select(index, el);
+                if (index === 0) select(0);
             });
 
         } catch (e) {
-            grid.innerHTML = "STATUS: CONNECTION_ERROR";
+            grid.innerHTML = "STATUS: ERROR";
         }
     }
 
-    function select(index, element) {
+    function select(index) {
+        currentIndex = index;
         const imgObj = images[index];
+        
+        // UI updates
         document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        const activeThumb = document.querySelector(`.thumb[data-index="${index}"]`);
+        if (activeThumb) activeThumb.classList.add('active');
         
         mainImg.src = imgObj.download_url;
         mainImg.style.display = 'block';
         meta.style.display = 'grid';
         
-        // Update Metadata
         caption.innerText = imgObj.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
         counter.innerText = `[${(index + 1).toString().padStart(2, '0')} / ${images.length.toString().padStart(2, '0')}]`;
-        
         dlLink.href = imgObj.download_url;
-        element.classList.add('active');
     }
+
+    function navigate(step) {
+        let newIndex = currentIndex + step;
+        if (newIndex < 0) newIndex = images.length - 1;
+        if (newIndex >= images.length) newIndex = 0;
+        select(newIndex);
+        
+        // Scroll thumbnail into view if it exists
+        const targetThumb = document.querySelector(`.thumb[data-index="${newIndex}"]`);
+        if (targetThumb) targetThumb.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+
+    search.oninput = (e) => {
+        const term = e.target.value.toLowerCase();
+        document.querySelectorAll('.thumb').forEach(el => {
+            const match = el.dataset.name.includes(term);
+            el.style.display = match ? 'block' : 'none';
+        });
+    };
 
     init();
 </script>
