@@ -3,155 +3,197 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Personal Gallery</title>
+    <title>The HNTech Gallery</title>
     <style>
-        :root {
-            --bg-color: #f4f4f9;
-            --card-bg: #ffffff;
-            --text-color: #333;
-            --accent: #5c67f2;
-        }
-
+        /* --- RAW BRUTALIST CSS --- */
         body {
-            font-family: 'Segoe UI', sans-serif;
-            background-color: var(--bg-color);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            background: #ffffff;
+            color: #000;
+            margin: 40px auto;
+            max-width: 900px;
+            padding: 0 20px;
+            line-height: 1.2;
         }
 
-        #gallery-container {
-            text-align: center;
-            background: var(--card-bg);
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            width: 90%;
-            max-width: 500px;
+        header {
+            border-bottom: 3px solid #000;
+            margin-bottom: 30px;
+            padding-bottom: 10px;
         }
 
-        .photo-frame {
-            width: 100%;
-            height: 350px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            border-radius: 8px;
-            background: #eee;
+        h1 { margin: 0; font-size: 2rem; text-transform: uppercase; }
+        p.subheading { margin: 5px 0 0 0; color: #666; font-size: 0.9rem; }
+
+        section-label {
+            display: block;
+            background: #000;
+            color: #fff;
+            padding: 2px 8px;
+            font-size: 0.8rem;
+            width: fit-content;
+            margin-bottom: 10px;
         }
 
-        img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-            transition: opacity 0.3s ease-in-out;
+        /* Thumbnail Grid */
+        #grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            gap: 5px;
+            border: 1px solid #000;
+            padding: 10px;
+            margin-bottom: 40px;
+            max-height: 180px;
+            overflow-y: scroll;
         }
 
-        #caption {
-            margin: 15px 0;
-            font-weight: 600;
-            color: var(--text-color);
-            text-transform: capitalize;
-            min-height: 1.2em;
-        }
+        /* Brutalist Scrollbar */
+        #grid::-webkit-scrollbar { width: 10px; }
+        #grid::-webkit-scrollbar-track { background: #eee; }
+        #grid::-webkit-scrollbar-thumb { background: #000; border: 2px solid #eee; }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-
-        button {
-            background: var(--accent);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
+        .thumb {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
             cursor: pointer;
-            font-weight: bold;
-            transition: transform 0.1s, opacity 0.2s;
+            filter: grayscale(100%);
+            border: 1px solid #eee;
         }
 
-        button:hover { opacity: 0.9; }
-        button:active { transform: scale(0.95); }
+        .thumb:hover, .thumb.active {
+            filter: grayscale(0%);
+            border: 1px solid #000;
+            outline: 1px solid #000;
+        }
+
+        /* Large Display Area */
+        #viewer {
+            border: 1px solid #000;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #fafafa;
+        }
+
+        #main-img {
+            max-width: 100%;
+            max-height: 70vh;
+            border: 1px solid #000;
+            display: none;
+        }
+
+        #meta-container {
+            width: 100%;
+            margin-top: 15px;
+            display: grid;
+            grid-template-columns: 100px 1fr 150px; /* Counter | Caption | Download */
+            align-items: center;
+            border-top: 1px dashed #000;
+            padding-top: 10px;
+        }
+
+        #counter { font-weight: bold; color: #666; }
+        #caption { font-weight: bold; text-transform: uppercase; text-align: center; }
+        .download-wrapper { text-align: right; }
+
+        .btn-download {
+            background: #000;
+            color: #fff;
+            text-decoration: none;
+            padding: 5px 12px;
+            font-size: 0.75rem;
+            display: inline-block;
+        }
+
+        .btn-download:hover { background: #444; }
+        .status { font-style: italic; }
     </style>
 </head>
 <body>
 
-<div id="gallery-container">
-    <div class="photo-frame">
-        <img id="display-photo" src="" alt="Gallery Image" style="opacity: 0;">
+    <header>
+        <h1>The HNTech Gallery</h1>
+        <p class="subheading">Collection of my favorite photography shots, taken all over the world :)</p>
+    </header>
+
+    <section-label>INDEX</section-label>
+    <div id="grid"><span class="status">connecting_to_server...</span></div>
+
+    <section-label>PREVIEW_WINDOW</section-label>
+    <div id="viewer">
+        <img id="main-img" src="" alt="">
+        
+        <div id="meta-container" style="display: none;">
+            <div id="counter">[ 00 / 00 ]</div>
+            <div id="caption">FILE_NAME</div>
+            <div class="download-wrapper">
+                <a id="download-link" href="#" download class="btn-download">SAVE_RAW</a>
+            </div>
+        </div>
     </div>
-    <div id="caption">Loading...</div>
-    
-    <div class="controls">
-        <button onclick="changePhoto(-1)">Prev</button>
-        <button onclick="changePhoto(1)">Next</button>
-    </div>
-</div>
 
 <script>
     // --- CONFIGURATION ---
-    const USERNAME = 'hntechsoftware';
+    const USER = 'hntechsoftware';
     const REPO = 'photogallery';
-    const FOLDER_PATH = 'WallpaperCollection'; // e.g., 'images' or leave empty for root
-    const INTERVAL = 5000; 
-    // ---------------------
+    const DIR  = 'WallpaperCollection'; 
+
+    const grid = document.getElementById('grid');
+    const mainImg = document.getElementById('main-img');
+    const caption = document.getElementById('caption');
+    const meta = document.getElementById('meta-container');
+    const dlLink = document.getElementById('download-link');
+    const counter = document.getElementById('counter');
 
     let images = [];
-    let currentIndex = 0;
-    let autoCycle;
 
-    async function fetchGallery() {
-        const url = `https://api.github.com/repos/${USERNAME}/${REPO}/contents/${FOLDER_PATH}`;
+    async function init() {
         try {
-            const response = await fetch(url);
-            const data = await response.json();
-            images = data.filter(file => /\.(jpe?g|png|gif|webp)$/i.test(file.name));
+            const res = await fetch(`https://api.github.com/repos/${USER}/${REPO}/contents/${DIR}`);
+            const files = await res.json();
+            images = files.filter(f => /\.(jpe?g|png|gif|webp)$/i.test(f.name));
 
-            if (images.length > 0) {
-                render();
-                startTimer();
-            } else {
-                document.getElementById('caption').innerText = "No images found.";
+            if (images.length === 0) {
+                grid.innerHTML = "STATUS: NO_FILES_FOUND";
+                return;
             }
+
+            grid.innerHTML = ''; 
+
+            images.forEach((img, index) => {
+                const el = document.createElement('img');
+                el.src = img.download_url;
+                el.className = 'thumb';
+                el.onclick = () => select(index, el);
+                grid.appendChild(el);
+
+                if (index === 0) select(index, el);
+            });
+
         } catch (e) {
-            document.getElementById('caption').innerText = "Error loading files.";
+            grid.innerHTML = "STATUS: CONNECTION_ERROR";
         }
     }
 
-    function render() {
-        const img = document.getElementById('display-photo');
-        const cap = document.getElementById('caption');
-        const photo = images[currentIndex];
-
-        img.style.opacity = 0;
-        setTimeout(() => {
-            img.src = photo.download_url;
-            cap.innerText = photo.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
-            img.style.opacity = 1;
-        }, 300);
+    function select(index, element) {
+        const imgObj = images[index];
+        document.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
+        
+        mainImg.src = imgObj.download_url;
+        mainImg.style.display = 'block';
+        meta.style.display = 'grid';
+        
+        // Update Metadata
+        caption.innerText = imgObj.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " ");
+        counter.innerText = `[ ${(index + 1).toString().padStart(2, '0')} / ${images.length.toString().padStart(2, '0')} ]`;
+        
+        dlLink.href = imgObj.download_url;
+        element.classList.add('active');
     }
 
-    function changePhoto(step) {
-        currentIndex = (currentIndex + step + images.length) % images.length;
-        render();
-        resetTimer(); // Reset auto-slide when user interacts
-    }
-
-    function startTimer() {
-        autoCycle = setInterval(() => changePhoto(1), INTERVAL);
-    }
-
-    function resetTimer() {
-        clearInterval(autoCycle);
-        startTimer();
-    }
-
-    fetchGallery();
+    init();
 </script>
 
 </body>
